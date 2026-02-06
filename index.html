@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EC指標ダッシュボード</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- ヘッダー -->
+        <header class="dashboard-header">
+            <h1>EC指標ダッシュボード</h1>
+            <p class="subtitle">KGI・KPIの可視化とGenAI導入効果の分析</p>
+        </header>
+
+        <!-- セクション1: KGI推移 -->
+        <section class="dashboard-section">
+            <h2 class="section-title">#KGI推移</h2>
+            <div class="filter-section-inline">
+                <div class="filter-group">
+                    <label for="periodFilter1">集計期間:</label>
+                    <select id="periodFilter1">
+                        <option value="all">全期間</option>
+                        <option value="last3months">直近3ヶ月</option>
+                        <option value="last6months">直近6ヶ月</option>
+                        <option value="last12months">直近12ヶ月</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="categoryFilter1">カテゴリ:</label>
+                    <select id="categoryFilter1">
+                        <option value="all">全て</option>
+                        <option value="apparel">アパレル</option>
+                        <option value="cosmetics">コスメ</option>
+                        <option value="electronics">家電</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="deviceFilter1">デバイス:</label>
+                    <select id="deviceFilter1">
+                        <option value="all">全て</option>
+                        <option value="pc">PC</option>
+                        <option value="mobile">モバイル</option>
+                        <option value="tablet">タブレット</option>
+                    </select>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <h3>売上推移（目標に対しての進捗）</h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- セクション2: ファネル別KPI状況 -->
+        <section class="dashboard-section">
+            <h2 class="section-title">#ファネル別KPI状況</h2>
+            <div class="filter-section-inline">
+                <div class="filter-group">
+                    <label for="periodFilter2">集計期間:</label>
+                    <select id="periodFilter2">
+                        <option value="all">全期間</option>
+                        <option value="last3months">直近3ヶ月</option>
+                        <option value="last6months">直近6ヶ月</option>
+                        <option value="last12months">直近12ヶ月</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="categoryFilter2">カテゴリ:</label>
+                    <select id="categoryFilter2">
+                        <option value="all">全て</option>
+                        <option value="apparel">アパレル</option>
+                        <option value="cosmetics">コスメ</option>
+                        <option value="electronics">家電</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="deviceFilter2">デバイス:</label>
+                    <select id="deviceFilter2">
+                        <option value="all">全て</option>
+                        <option value="pc">PC</option>
+                        <option value="mobile">モバイル</option>
+                        <option value="tablet">タブレット</option>
+                    </select>
+                </div>
+            </div>
+            <div class="funnel-container">
+                <div class="funnel-item">
+                    <div class="funnel-label">セッション数</div>
+                    <div class="funnel-value" id="sessionValue">-</div>
+                </div>
+                <div class="funnel-arrow">→</div>
+                <div class="funnel-branch-container">
+                    <div class="funnel-item">
+                        <div class="funnel-label">PV数</div>
+                        <div class="funnel-sub-label">（平均PV数）</div>
+                        <div class="funnel-value" id="pageViewsValue">-</div>
+                        <div class="funnel-sub-value" id="avgPageViewsValue">-</div>
+                    </div>
+                    <div class="funnel-item funnel-item-nested">
+                        <div class="funnel-label">検索数</div>
+                        <div class="funnel-sub-label">（平均検索数）</div>
+                        <div class="funnel-value" id="searchCountValue">-</div>
+                        <div class="funnel-sub-value" id="avgSearchCountValue">-</div>
+                    </div>
+                    <div class="funnel-item funnel-item-nested">
+                        <div class="funnel-label">直帰率</div>
+                        <div class="funnel-value" id="bounceRateValue">-</div>
+                    </div>
+                </div>
+                <div class="funnel-arrow">→</div>
+                <div class="funnel-item">
+                    <div class="funnel-label">クリック数</div>
+                    <div class="funnel-sub-label">（クリック率）</div>
+                    <div class="funnel-value" id="clickCountValue">-</div>
+                    <div class="funnel-sub-value" id="clickRateValue">-</div>
+                </div>
+                <div class="funnel-arrow">→</div>
+                <div class="funnel-item">
+                    <div class="funnel-label">購買金額</div>
+                    <div class="funnel-sub-label">（購買率、購買単価）</div>
+                    <div class="funnel-value" id="purchaseAmountValue">-</div>
+                    <div class="funnel-sub-value" id="purchaseRateAndPriceValue">-</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- セクション3: 主要KPI推移・ランキング -->
+        <section class="dashboard-section">
+            <h2 class="section-title">#主要KPI推移・ランキング</h2>
+            <div class="filter-section-inline">
+                <div class="filter-group">
+                    <label for="periodFilter3">集計期間:</label>
+                    <select id="periodFilter3">
+                        <option value="all">全期間</option>
+                        <option value="last3months">直近3ヶ月</option>
+                        <option value="last6months">直近6ヶ月</option>
+                        <option value="last12months">直近12ヶ月</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="categoryFilter3">カテゴリ:</label>
+                    <select id="categoryFilter3">
+                        <option value="all">全て</option>
+                        <option value="apparel">アパレル</option>
+                        <option value="cosmetics">コスメ</option>
+                        <option value="electronics">家電</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="deviceFilter3">デバイス:</label>
+                    <select id="deviceFilter3">
+                        <option value="all">全て</option>
+                        <option value="pc">PC</option>
+                        <option value="mobile">モバイル</option>
+                        <option value="tablet">タブレット</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="searchPathFilter3">検索経路:</label>
+                    <select id="searchPathFilter3">
+                        <option value="all">全て</option>
+                    </select>
+                    <div id="searchPathRadioContainer" style="display: none; margin-top: 10px; padding: 10px; background: white; border: 1px solid #ddd; border-radius: 4px;">
+                        <label style="display: block; margin-bottom: 8px;">
+                            <input type="radio" name="searchPathRadio" value="aiSearch" style="margin-right: 5px;">AI検索
+                        </label>
+                        <label style="display: block; margin-bottom: 8px;">
+                            <input type="radio" name="searchPathRadio" value="normalSearch" style="margin-right: 5px;">普通検索
+                        </label>
+                        <label style="display: block; margin-bottom: 8px;">
+                            <input type="radio" name="searchPathRadio" value="noSearch" style="margin-right: 5px;">未検索
+                        </label>
+                        <label style="display: block;">
+                            <input type="radio" name="searchPathRadio" value="all" checked style="margin-right: 5px;">全て
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="trend-grid">
+                <!-- 閲覧数・平均閲覧数（縦配置） -->
+                <div class="trend-column">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>PV数推移</h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="pageViewsTrendChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card nested-card">
+                        <div class="card-header">
+                            <h3>平均PV数推移</h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="avgPageViewsTrendChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 検索数・平均検索数（縦配置） -->
+                <div class="trend-column">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>検索数推移</h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="searchCountTrendChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card nested-card">
+                        <div class="card-header">
+                            <h3>平均検索数推移</h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="avgSearchCountTrendChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- クリック数・クリック率（縦配置） -->
+                <div class="trend-column">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>クリック数推移</h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="clickCountTrendChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card nested-card">
+                        <div class="card-header">
+                            <h3>クリック率推移</h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="clickRateTrendChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 購買率・購買単価（縦配置） -->
+                <div class="trend-column">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>購買率推移</h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="purchaseRateTrendChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card nested-card">
+                        <div class="card-header">
+                            <h3>購買単価推移</h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="purchasePriceTrendChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 追加指標: 0件ヒット時の離脱率 -->
+            <div class="card" style="margin-top: 20px;">
+                <div class="card-header">
+                    <h3>0件ヒット時の離脱率</h3>
+                    <p class="card-description">GenAI導入前後で比較</p>
+                </div>
+                <div class="filter-section-inline" style="margin-bottom: 10px;">
+                    <div class="filter-group">
+                        <label for="periodFilterZeroHit">集計期間:</label>
+                        <select id="periodFilterZeroHit">
+                            <option value="all">全期間</option>
+                            <option value="last3months">直近3ヶ月</option>
+                            <option value="last6months">直近6ヶ月</option>
+                            <option value="last12months">直近12ヶ月</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="deviceFilterZeroHit">デバイス:</label>
+                        <select id="deviceFilterZeroHit">
+                            <option value="all">全て</option>
+                            <option value="pc">PC</option>
+                            <option value="mobile">モバイル</option>
+                            <option value="tablet">タブレット</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <canvas id="zeroHitBounceRateChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- 追加指標: 検索ワード別の検索数、CTR、CVR -->
+            <div class="card" style="margin-top: 20px;">
+                <div class="card-header">
+                    <h3>検索ワード別の検索数、CTR、CVR</h3>
+                </div>
+                <div class="filter-section-inline" style="margin-bottom: 10px;">
+                    <div class="filter-group">
+                        <label for="periodFilterSearchWord">集計期間:</label>
+                        <select id="periodFilterSearchWord">
+                            <option value="all">全期間</option>
+                            <option value="last3months">直近3ヶ月</option>
+                            <option value="last6months">直近6ヶ月</option>
+                            <option value="last12months">直近12ヶ月</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="deviceFilterSearchWord">デバイス:</label>
+                        <select id="deviceFilterSearchWord">
+                            <option value="all">全て</option>
+                            <option value="pc">PC</option>
+                            <option value="mobile">モバイル</option>
+                            <option value="tablet">タブレット</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="searchPathFilterSearchWord">検索経路:</label>
+                        <select id="searchPathFilterSearchWord">
+                            <option value="all">全て</option>
+                        </select>
+                        <div id="searchPathRadioContainerSearchWord" style="display: none; margin-top: 10px; padding: 10px; background: white; border: 1px solid #ddd; border-radius: 4px;">
+                            <label style="display: block; margin-bottom: 8px;">
+                                <input type="radio" name="searchPathRadioSearchWord" value="aiSearch" style="margin-right: 5px;">AI検索
+                            </label>
+                            <label style="display: block; margin-bottom: 8px;">
+                                <input type="radio" name="searchPathRadioSearchWord" value="normalSearch" style="margin-right: 5px;">普通検索
+                            </label>
+                            <label style="display: block; margin-bottom: 8px;">
+                                <input type="radio" name="searchPathRadioSearchWord" value="noSearch" style="margin-right: 5px;">未検索
+                            </label>
+                            <label style="display: block;">
+                                <input type="radio" name="searchPathRadioSearchWord" value="all" checked style="margin-right: 5px;">全て
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="ranking-table-container">
+                        <table class="ranking-table" id="searchWordRankingTable">
+                            <thead>
+                                <tr>
+                                    <th>順位</th>
+                                    <th>検索ワード</th>
+                                    <th class="sortable" data-sort="searchCount">検索数 <span class="sort-indicator">↕</span></th>
+                                    <th class="sortable" data-sort="ctr">CTR (%) <span class="sort-indicator">↕</span></th>
+                                    <th class="sortable" data-sort="cvr">CVR (%) <span class="sort-indicator">↕</span></th>
+                                </tr>
+                            </thead>
+                            <tbody id="searchWordRankingBody">
+                                <!-- ランキングデータがここに挿入されます -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- セクション4: GenAI利用状況 -->
+        <section class="dashboard-section">
+            <h2 class="section-title">#GenAI利用状況</h2>
+            <div class="filter-section-inline">
+                <div class="filter-group">
+                    <label for="periodFilter4">集計期間:</label>
+                    <select id="periodFilter4">
+                        <option value="all">全期間</option>
+                        <option value="last3months">直近3ヶ月</option>
+                        <option value="last6months">直近6ヶ月</option>
+                        <option value="last12months">直近12ヶ月</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="deviceFilter4">デバイス:</label>
+                    <select id="deviceFilter4">
+                        <option value="all">全て</option>
+                        <option value="pc">PC</option>
+                        <option value="mobile">モバイル</option>
+                        <option value="tablet">タブレット</option>
+                    </select>
+                </div>
+            </div>
+            <div class="genai-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>AI検索の利用率</h3>
+                        <p class="card-description">普通検索の利用率との対比</p>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="aiSearchUsageChart"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3>検索ワードの平均文字数</h3>
+                        <p class="card-description">普通検索とAI検索の比較</p>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="searchWordLengthChart"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3>0件検索時のAIレコメンドのCTR</h3>
+                        <p class="card-description">0件ヒット時のAIレコメンド効果</p>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="zeroHitAICTRChart"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3>FB数（グッドマーク・バッドマーク）</h3>
+                        <p class="card-description">ユーザーフィードバックの推移</p>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="feedbackChart"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3>別カテゴリ商品レコメンド購買率</h3>
+                        <p class="card-description">AI検索ワードとは別カテゴリ商品の購買率</p>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="crossCategoryPurchaseRateChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>
